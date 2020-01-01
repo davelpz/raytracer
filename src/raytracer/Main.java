@@ -2,6 +2,7 @@ package raytracer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import raytracer.Vec;
 
@@ -21,14 +22,11 @@ public class Main {
 	}
 
 	public static Vec color(Ray r, Hitable world) {
-		HitResult hit_result = world.hit(r, 0.0f, Float.MAX_VALUE);
-
-		if (hit_result.hit_anything) {
-			return Vec.mul(0.5f, new Vec(hit_result.hit_record.normal.x() + 1.0f,
-					hit_result.hit_record.normal.y() + 1.0f, hit_result.hit_record.normal.z() + 1.0f));
-			// Vec n = Vec.unit_vector(Vec.sub(r.point_at_parameter(t), new Vec(0.0f, 0.0f,
-			// -1.0f)));
-			// return Vec.mul(0.5f, new Vec(n.x() + 1.0f, n.y() + 1.0f, n.z() + 1.0f));
+		Optional<HitRecord> temp = world.hit(r, 0.0f, Float.MAX_VALUE);
+		if (temp.isPresent()) {
+			HitRecord hit_record = temp.get();
+			return Vec.mul(0.5f, new Vec(hit_record.normal.x() + 1.0f,
+					hit_record.normal.y() + 1.0f, hit_record.normal.z() + 1.0f));
 		}
 		Vec unit_direction = Vec.unit_vector(r.direction());
 		float t = 0.5f * (unit_direction.y() + 1.0f);
@@ -36,7 +34,6 @@ public class Main {
 	}
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 		int nx = 200;
 		int ny = 100;
 		Vec lower_left_corner = new Vec(-2.0f, -1.0f, -1.0f);

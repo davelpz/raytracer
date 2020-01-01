@@ -2,6 +2,7 @@ package raytracer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class HitableList implements Hitable {
 	List<Hitable> list = new ArrayList<>();
@@ -14,17 +15,17 @@ public class HitableList implements Hitable {
 	}
 
 	@Override
-	public HitResult hit(Ray r, float t_min, float t_max) {
-		HitResult hit_result = new HitResult();
+	public Optional<HitRecord> hit(Ray r, float t_min, float t_max) {
+		HitRecord hit_record = new HitRecord();
 		float closest_so_far = t_max;
 		for (Hitable h : list) {
-			HitResult temp_hit_result = h.hit(r, t_min, closest_so_far);
-			if (temp_hit_result.hit_anything) {
-				hit_result.hit_anything = true;
-				closest_so_far = temp_hit_result.hit_record.t;
-				hit_result.hit_record = temp_hit_result.hit_record;
+			Optional<HitRecord> temp = h.hit(r, t_min, closest_so_far);
+			if (temp.isPresent()) {
+				HitRecord temp_hit_record = temp.get();
+				closest_so_far = temp_hit_record.t;
+				hit_record = temp_hit_record;
 			}
 		}
-		return hit_result;
+		return Optional.of(hit_record);
 	}
 }

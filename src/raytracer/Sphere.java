@@ -1,5 +1,8 @@
 package raytracer;
 
+import java.util.Optional;
+import raytracer.HitRecord;
+
 public class Sphere implements Hitable {
 
 	Vec center = new Vec(0.0f, 0.0f, 0.0f);
@@ -14,8 +17,8 @@ public class Sphere implements Hitable {
 	}
 
 	@Override
-	public HitResult hit(final Ray r, float t_min, float t_max) {
-		HitResult hit_result = new HitResult();
+	public Optional<HitRecord> hit(final Ray r, float t_min, float t_max) {
+		HitRecord hit_record = new HitRecord();
 		Vec oc = Vec.sub(r.origin(), center);
 		float a = Vec.dot(r.direction(), r.direction());
 		float b = Vec.dot(oc, r.direction());
@@ -24,22 +27,20 @@ public class Sphere implements Hitable {
 		if (discriminant > 0) {
 			float temp = (-b - (float) Math.sqrt(discriminant)) / a;
 			if (temp < t_max && temp > t_min) {
-				hit_result.hit_record.t = temp;
-				hit_result.hit_record.p = r.point_at_parameter(hit_result.hit_record.t);
-				hit_result.hit_record.normal = Vec.div((Vec.sub(hit_result.hit_record.p, center)), radius);
-				hit_result.hit_anything = true;
-				return hit_result;
+				hit_record.t = temp;
+				hit_record.p = r.point_at_parameter(hit_record.t);
+				hit_record.normal = Vec.div((Vec.sub(hit_record.p, center)), radius);
+				return Optional.of(hit_record);
 			}
 			temp = (-b + (float) Math.sqrt(discriminant)) / a;
 			if (temp < t_max && temp > t_min) {
-				hit_result.hit_record.t = temp;
-				hit_result.hit_record.p = r.point_at_parameter(hit_result.hit_record.t);
-				hit_result.hit_record.normal = Vec.div((Vec.sub(hit_result.hit_record.p, center)), radius);
-				hit_result.hit_anything = true;
-				return hit_result;
+				hit_record.t = temp;
+				hit_record.p = r.point_at_parameter(hit_record.t);
+				hit_record.normal = Vec.div((Vec.sub(hit_record.p, center)), radius);
+				return Optional.of(hit_record);
 			}
 		}
-		return hit_result;
+		return Optional.empty();
 	}
 
 }
