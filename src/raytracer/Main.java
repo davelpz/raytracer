@@ -11,12 +11,21 @@ import raytracer.Vec;
 
 public class Main {
 
-	public static Vec color(Ray r, Hitable world) {
-		Optional<HitRecord> temp = world.hit(r, 0.0f, Float.MAX_VALUE);
+	public static Vec random_in_unit_square() {
+		Vec p;
+		do {
+			p = Vec.sub(Vec.mul(2.0f, new Vec(Math.random(), Math.random(), Math.random())), new Vec(1.0f, 1.0f, 1.0f));
+		} while (p.squared_length() >= 1.0);
 
-		return temp.map(hit_record -> {
-			return Vec.mul(0.5f,
-					new Vec(hit_record.normal.x() + 1.0f, hit_record.normal.y() + 1.0f, hit_record.normal.z() + 1.0f));
+		return p;
+	}
+
+	public static Vec color(Ray r, Hitable world) {
+		Optional<HitRecord> temp = world.hit(r, 0.001f, Float.MAX_VALUE);
+
+		return temp.map(rec -> {
+			Vec target = Vec.add(Vec.add(rec.p, rec.normal), random_in_unit_square());
+			return Vec.mul(0.5f, color(new Ray(rec.p, Vec.sub(target, rec.p)), world));
 
 		}).orElseGet(() -> {
 			Vec unit_direction = Vec.unit_vector(r.direction());
@@ -49,6 +58,7 @@ public class Main {
 					col.add(color(r, world));
 				}
 				col.div((float) ns);
+				col.sqrt();
 				int ir = (int) (255.99 * col.get(0));
 				int ig = (int) (255.99 * col.get(1));
 				int ib = (int) (255.99 * col.get(2));

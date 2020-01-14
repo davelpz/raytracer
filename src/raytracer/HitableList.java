@@ -17,6 +17,7 @@ public class HitableList implements Hitable {
 	@Override
 	public Optional<HitRecord> hit(Ray r, float t_min, float t_max) {
 		HitRecord hit_record = new HitRecord();
+		boolean hit_anything = false;
 		float closest_so_far = t_max;
 		for (Hitable h : list) {
 			Optional<HitRecord> temp = h.hit(r, t_min, closest_so_far);
@@ -24,8 +25,14 @@ public class HitableList implements Hitable {
 				HitRecord temp_hit_record = temp.get();
 				closest_so_far = temp_hit_record.t;
 				hit_record = temp_hit_record;
+				hit_anything = true;
 			}
 		}
-		return Optional.of(hit_record);
+		
+		if (hit_anything) {
+			return Optional.of(hit_record);
+		} else {
+			return Optional.empty();
+		}
 	}
 }

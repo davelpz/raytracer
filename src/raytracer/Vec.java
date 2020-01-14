@@ -12,6 +12,12 @@ public class Vec {
 		e[2] = e2;
 	}
 
+	public Vec(double e0, double e1, double e2) {
+		e[0] = (float) e0;
+		e[1] = (float) e1;
+		e[2] = (float) e2;
+	}
+
 	public float x() {
 		return e[0];
 	}
@@ -146,6 +152,13 @@ public class Vec {
 		e[0] /= t;
 		e[1] /= t;
 		e[2] /= t;
+		return this;
+	}
+
+	public Vec sqrt() {
+		e[0] = (float) Math.sqrt(e[0]);
+		e[1] = (float) Math.sqrt(e[1]);
+		e[2] = (float) Math.sqrt(e[2]);
 		return this;
 	}
 
