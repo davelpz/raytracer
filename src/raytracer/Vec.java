@@ -47,7 +47,7 @@ public class Vec {
 	}
 
 	public static Vec neg(Vec a) {
-		return new Vec(a.x(), a.y(), a.z());
+		return new Vec(-a.x(), -a.y(), -a.z());
 	}
 
 	public float get(int i) {

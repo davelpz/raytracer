@@ -37,10 +37,11 @@ public class Main {
 		int ns = 100;
 
 		List<Hitable> list = new ArrayList<>();
-		list.add(new Sphere(new Vec(0.0f, 0.0f, -1.0f), 0.5f, new Lambertian(new Vec(0.8, 0.3, 0.3))));
+		list.add(new Sphere(new Vec(0.0f, 0.0f, -1.0f), 0.5f, new Lambertian(new Vec(0.1, 0.2, 0.5))));
 		list.add(new Sphere(new Vec(0.0f, -100.5f, -1.0f), 100.f, new Lambertian(new Vec(0.8, 0.8, 0.0))));
-		list.add(new Sphere(new Vec(1.0f, 0.0f, -1.0f), 0.5f, new Metal(new Vec(0.8, 0.6, 0.2), 1.0f)));
-		list.add(new Sphere(new Vec(-1.0f, 0.0f, -1.0f), 0.5f, new Metal(new Vec(0.8, 0.8, 0.8), 0.3f)));
+		list.add(new Sphere(new Vec(1.0f, 0.0f, -1.0f), 0.5f, new Metal(new Vec(0.8, 0.6, 0.2), 0.2f)));
+		list.add(new Sphere(new Vec(-1.0f, 0.0f, -1.0f), 0.5f, new Dielectric(1.5f)));
+		list.add(new Sphere(new Vec(-1.0f, 0.0f, -1.0f), -0.45f, new Dielectric(1.5f)));
 		HitableList world = new HitableList(list);
 
 		Camera cam = new Camera();
