@@ -7,13 +7,15 @@ public class Sphere implements Hitable {
 
 	Vec center = new Vec(0.0f, 0.0f, 0.0f);
 	float radius = 0.0f;
+	Material mat;
 
 	public Sphere() {
 	}
 
-	public Sphere(Vec cen, float r) {
+	public Sphere(Vec cen, float r, Material m) {
 		center = cen;
 		radius = r;
+		mat = m;
 	}
 
 	@Override
@@ -30,6 +32,7 @@ public class Sphere implements Hitable {
 				hit_record.t = temp;
 				hit_record.p = r.point_at_parameter(hit_record.t);
 				hit_record.normal = Vec.div((Vec.sub(hit_record.p, center)), radius);
+				hit_record.mat = mat;
 				return Optional.of(hit_record);
 			}
 			temp = (-b + (float) Math.sqrt(discriminant)) / a;
@@ -37,6 +40,7 @@ public class Sphere implements Hitable {
 				hit_record.t = temp;
 				hit_record.p = r.point_at_parameter(hit_record.t);
 				hit_record.normal = Vec.div((Vec.sub(hit_record.p, center)), radius);
+				hit_record.mat = mat;
 				return Optional.of(hit_record);
 			}
 		}

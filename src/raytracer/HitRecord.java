@@ -4,6 +4,7 @@ public class HitRecord {
 	public float t;
 	public Vec p;
 	public Vec normal;
+	public Material mat;
 
 	public HitRecord() {
 		t = 0.0f;
