@@ -29,10 +29,12 @@ public class Main {
 		list.add(new Sphere(new Vec(-1.0f, 0.0f, -1.0f), 0.5f, new Dielectric(1.5f)));
 		list.add(new Sphere(new Vec(-1.0f, 0.0f, -1.0f), -0.45f, new Dielectric(1.5f)));
 
-		Vec lookfrom = new Vec(-2, 2, 1);
-		Vec lookat = new Vec(0, 0, 1);
+		Vec lookfrom = new Vec(3, 3, 2);
+		Vec lookat = new Vec(0, 0, -1);
 		Vec vup = new Vec(0, 1, 0);
-		Camera cam = new Camera(lookfrom, lookat, vup, 90, (float) nx / (float) ny);
+		float dist_to_focus = (Vec.sub(lookfrom, lookat)).length();
+		float aperture = 2.0f;
+		Camera cam = new Camera(lookfrom, lookat, vup, 20, (float) nx / (float) ny, aperture, dist_to_focus);
 
 		return new SetupResult(cam, list);
 	}
@@ -43,10 +45,12 @@ public class Main {
 		list.add(new Sphere(new Vec(-R, 0.0f, -1.0f), R, new Lambertian(new Vec(0.0, 0.0, 1))));
 		list.add(new Sphere(new Vec(R, 0.0f, -1.0f), R, new Lambertian(new Vec(1.0, 0.0, 0))));
 
-		Vec lookfrom = new Vec(-2, 2, 1);
-		Vec lookat = new Vec(0, 0, 1);
+		Vec lookfrom = new Vec(3, 3, 2);
+		Vec lookat = new Vec(0, 0, -1);
 		Vec vup = new Vec(0, 1, 0);
-		Camera cam = new Camera(lookfrom, lookat, vup, 90, (float) nx / (float) ny);
+		float dist_to_focus = (Vec.sub(lookfrom, lookat)).length();
+		float aperture = 2.0f;
+		Camera cam = new Camera(lookfrom, lookat, vup, 20, (float) nx / (float) ny, aperture, dist_to_focus);
 
 		return new SetupResult(cam, list);
 	}
