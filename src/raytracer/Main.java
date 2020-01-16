@@ -21,6 +21,37 @@ public class Main {
 		}
 	}
 
+	static class Ticker {
+		float max_count;
+		int count;
+		int fiveper;
+		long elapsed_start;
+		long time_start;
+		
+		public Ticker(int max) {
+			max_count = max;
+			fiveper = (int) (max_count * 0.05f);
+			elapsed_start = System.currentTimeMillis();
+			time_start = elapsed_start;
+			System.out.println("" + max_count + " pixels");
+		}
+
+		public void tick() {
+			count = count + 1;
+			if (count % fiveper == 0) {
+				int percent = (int) (((count / max_count) * 10000.0f) / 100.0f);
+				long elapsed = (System.currentTimeMillis() - elapsed_start) / fiveper;
+				System.out.print("\r" + percent + "%    " + elapsed + "ms per pixel");
+				elapsed_start = System.currentTimeMillis();
+			}
+		}
+		
+		public void end() {
+			long elapsed = (System.currentTimeMillis() - time_start) / 1000;
+			System.out.print("\r" + elapsed + " seconds    ");
+		}
+	}
+
 	public static SetupResult setup(int nx, int ny) {
 		List<Hitable> list = new ArrayList<>();
 		list.add(new Sphere(new Vec(0.0f, 0.0f, -1.0f), 0.5f, new Lambertian(new Vec(0.1, 0.2, 0.5))));
@@ -55,6 +86,44 @@ public class Main {
 		return new SetupResult(cam, list);
 	}
 
+	public static SetupResult random_scene(int nx, int ny) {
+		int n = 500;
+		List<Hitable> list = new ArrayList<>();
+		list.add(new Sphere(new Vec(0, -1000.0f, 0.0f), 1000, new Lambertian(new Vec(0.5, 0.5, 0.5))));
+
+		int i = 1;
+		for (int a = -11; a < 11; a++) {
+			for (int b = -11; b < 11; b++) {
+				float choose_mat = (float) Math.random();
+				Vec center = new Vec(a + 0.9 * Math.random(), 0.2, b + 0.9 * Math.random());
+				if (Vec.sub(center, new Vec(4, 0.2, 0)).length() > 0.9) {
+					if (choose_mat < 0.7) {
+						list.add(new Sphere(center, 0.2f, new Lambertian(new Vec(Math.random() * Math.random(),
+								Math.random() * Math.random(), Math.random() * Math.random()))));
+					}
+				} else if (choose_mat < 0.85) {
+					list.add(new Sphere(center, 0.2f, new Metal(
+							new Vec(0.5 * (1 + Math.random()), 0.5 * (1 + Math.random()), 0.5 * (1 + Math.random())),
+							0.5f * (float) Math.random())));
+				} else {
+					list.add(new Sphere(center, 0.2f, new Dielectric(1.5f)));
+				}
+			}
+		}
+
+		list.add(new Sphere(new Vec(0, 1, 0), 1.0f, new Dielectric(1.5f)));
+		list.add(new Sphere(new Vec(-4, 1, 0), 1.0f, new Lambertian(new Vec(0.4, 0.2, 0.1))));
+		list.add(new Sphere(new Vec(4, 1, 0), 1.0f, new Metal(new Vec(0.7, 0.6, 0.5), 0.0f)));
+
+		Vec lookfrom = new Vec(13, 2, 3);
+		Vec lookat = new Vec(0, 0, 0);
+		Vec vup = new Vec(0, 1, 0);
+		float dist_to_focus = 10.0f;// (Vec.sub(lookfrom, lookat)).length();
+		float aperture = 0.1f;
+		Camera cam = new Camera(lookfrom, lookat, vup, 20, (float) nx / (float) ny, aperture, dist_to_focus);
+		return new SetupResult(cam, list);
+	}
+
 	public static Vec color(Ray r, Hitable world, int depth) {
 		Optional<HitRecord> temp = world.hit(r, 0.001f, Float.MAX_VALUE);
 
@@ -80,7 +149,9 @@ public class Main {
 		int ny = 200;
 		int ns = 100;
 
-		SetupResult res = setup(nx, ny);
+		Ticker ticker = new Ticker(nx * ny);
+
+		SetupResult res = random_scene(nx, ny);
 		HitableList world = new HitableList(res.world);
 		Camera cam = res.camera;
 
@@ -100,10 +171,12 @@ public class Main {
 				int ig = (int) (255.99 * col.get(1));
 				int ib = (int) (255.99 * col.get(2));
 				output.write(ir + " " + ig + " " + ib + "\n");
+				ticker.tick();
 			}
 		}
 
 		output.close();
+		ticker.end();
 	}
 
 }
