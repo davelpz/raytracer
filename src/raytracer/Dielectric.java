@@ -42,9 +42,9 @@ public class Dielectric implements Material {
 		}
 
 		if (Math.random() < reflect_prob) {
-			result.scattered = new Ray(rec.p, reflected);
+			result.scattered = new Ray(rec.p, reflected, r_in.time());
 		} else {
-			result.scattered = new Ray(rec.p, refracted);
+			result.scattered = new Ray(rec.p, refracted, r_in.time());
 		}
 
 		return Optional.of(result);

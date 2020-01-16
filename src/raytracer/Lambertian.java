@@ -13,7 +13,7 @@ public class Lambertian implements Material {
 	public Optional<ScatterResult> scatter(Ray r_in, HitRecord rec) {
 		ScatterResult result = new ScatterResult();
 		Vec target = Vec.add(Vec.add(rec.p, rec.normal), random_in_unit_sphere());
-		result.scattered = new Ray(rec.p, Vec.sub(target, rec.p));
+		result.scattered = new Ray(rec.p, Vec.sub(target, rec.p), r_in.time());
 		result.attenuation = albedo;
 		return Optional.of(result);
 	}

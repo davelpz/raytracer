@@ -19,7 +19,7 @@ public class Metal implements Material {
 	public Optional<ScatterResult> scatter(Ray r_in, HitRecord rec) {
 		ScatterResult result = new ScatterResult();
 		Vec reflected = reflect(Vec.unit_vector(r_in.direction()), rec.normal);
-		result.scattered = new Ray(rec.p, Vec.add(reflected, Vec.mul(fuzz,random_in_unit_sphere())));
+		result.scattered = new Ray(rec.p, Vec.add(reflected, Vec.mul(fuzz,random_in_unit_sphere())), r_in.time());
 		result.attenuation = albedo;
 		if (Vec.dot(result.scattered.direction(), rec.normal) > 0) {
 			return Optional.of(result);

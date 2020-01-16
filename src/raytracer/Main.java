@@ -27,7 +27,7 @@ public class Main {
 		int fiveper;
 		long elapsed_start;
 		long time_start;
-		
+
 		public Ticker(int max) {
 			max_count = max;
 			fiveper = (int) (max_count * 0.05f);
@@ -45,7 +45,7 @@ public class Main {
 				elapsed_start = System.currentTimeMillis();
 			}
 		}
-		
+
 		public void end() {
 			long elapsed = (System.currentTimeMillis() - time_start) / 1000;
 			System.out.print("\r" + elapsed + " seconds    ");
@@ -65,7 +65,8 @@ public class Main {
 		Vec vup = new Vec(0, 1, 0);
 		float dist_to_focus = (Vec.sub(lookfrom, lookat)).length();
 		float aperture = 2.0f;
-		Camera cam = new Camera(lookfrom, lookat, vup, 20, (float) nx / (float) ny, aperture, dist_to_focus);
+		Camera cam = new Camera(lookfrom, lookat, vup, 20, (float) nx / (float) ny, aperture, dist_to_focus, 0.0f,
+				1.0f);
 
 		return new SetupResult(cam, list);
 	}
@@ -81,7 +82,8 @@ public class Main {
 		Vec vup = new Vec(0, 1, 0);
 		float dist_to_focus = (Vec.sub(lookfrom, lookat)).length();
 		float aperture = 2.0f;
-		Camera cam = new Camera(lookfrom, lookat, vup, 20, (float) nx / (float) ny, aperture, dist_to_focus);
+		Camera cam = new Camera(lookfrom, lookat, vup, 20, (float) nx / (float) ny, aperture, dist_to_focus, 0.0f,
+				1.0f);
 
 		return new SetupResult(cam, list);
 	}
@@ -98,8 +100,9 @@ public class Main {
 				Vec center = new Vec(a + 0.9 * Math.random(), 0.2, b + 0.9 * Math.random());
 				if (Vec.sub(center, new Vec(4, 0.2, 0)).length() > 0.9) {
 					if (choose_mat < 0.7) {
-						list.add(new Sphere(center, 0.2f, new Lambertian(new Vec(Math.random() * Math.random(),
-								Math.random() * Math.random(), Math.random() * Math.random()))));
+						list.add(new MovingSphere(center, Vec.add(center, new Vec(0, 0.5 * Math.random(), 0)), 0.0f,
+								1.0f, 0.2f, new Lambertian(new Vec(Math.random() * Math.random(),
+										Math.random() * Math.random(), Math.random() * Math.random()))));
 					}
 				} else if (choose_mat < 0.85) {
 					list.add(new Sphere(center, 0.2f, new Metal(
@@ -120,7 +123,8 @@ public class Main {
 		Vec vup = new Vec(0, 1, 0);
 		float dist_to_focus = 10.0f;// (Vec.sub(lookfrom, lookat)).length();
 		float aperture = 0.1f;
-		Camera cam = new Camera(lookfrom, lookat, vup, 20, (float) nx / (float) ny, aperture, dist_to_focus);
+		Camera cam = new Camera(lookfrom, lookat, vup, 20, (float) nx / (float) ny, aperture, dist_to_focus, 0.0f,
+				1.0f);
 		return new SetupResult(cam, list);
 	}
 

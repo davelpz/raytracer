@@ -7,8 +7,12 @@ public class Camera {
 	Vec vertical;
 	Vec u, v, w;
 	float lens_radius;
+	float time0, time1;
 
-	public Camera(Vec lookfrom, Vec lookat, Vec vup, float vfov, float aspect, float aperture, float focus_dist) {
+	public Camera(Vec lookfrom, Vec lookat, Vec vup, float vfov, float aspect, float aperture, float focus_dist,
+			float t0, float t1) {
+		time0 = t0;
+		time1 = t1;
 		lens_radius = aperture / 2;
 		float theta = vfov * (float) Math.PI / 180.0f;
 		float half_height = (float) Math.tan(theta / 2);
@@ -27,10 +31,11 @@ public class Camera {
 	public Ray get_ray(float s, float t) {
 		Vec rd = Vec.mul(lens_radius, random_in_unit_disk());
 		Vec offset = Vec.add(Vec.mul(u, rd.x()), Vec.mul(v, rd.y()));
+		float time = time0 + (float) Math.random() * (time1 - time0);
 
 		return new Ray(Vec.add(origin, offset), Vec.sub(
 				Vec.sub(Vec.add(lower_left_corner, Vec.add(Vec.mul(s, horizontal), Vec.mul(t, vertical))), origin),
-				offset));
+				offset), time);
 	}
 
 	Vec random_in_unit_disk() {
