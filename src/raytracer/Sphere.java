@@ -47,4 +47,10 @@ public class Sphere implements Hitable {
 		return Optional.empty();
 	}
 
+	public Optional<Aabb> bounding_box(float t0, float t1) {
+		Aabb box = new Aabb(Vec.sub(center, new Vec(radius, radius, radius)),
+				Vec.add(center, new Vec(radius, radius, radius)));
+		return Optional.of(box);
+	}
+
 }

@@ -56,4 +56,11 @@ public class MovingSphere implements Hitable {
 		return Optional.empty();
 	}
 
+	public Optional<Aabb> bounding_box(float t0, float t1) {
+		Aabb t0box = new Aabb(Vec.sub(center(t0), new Vec(radius, radius, radius)),
+				Vec.add(center(t0), new Vec(radius, radius, radius)));
+		Aabb t1box = new Aabb(Vec.sub(center(t1), new Vec(radius, radius, radius)),
+				Vec.add(center(t1), new Vec(radius, radius, radius)));
+		return Optional.of(Aabb.surrounding_box(t0box, t1box));
+	}
 }

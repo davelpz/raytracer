@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import raytracer.Vec;
 
@@ -147,35 +148,114 @@ public class Main {
 		});
 	}
 
+	public static class Pixel {
+		public int x;
+		public int y;
+
+		public Pixel(int x, int y) {
+			this.x = x;
+			this.y = y;
+		}
+
+		public String toString() {
+			return "Pixel(" + x + "," + y + ")";
+		}
+	}
+
+	public static class RayCastResult {
+		public Pixel pixel;
+		public Vec color;
+
+		public RayCastResult(Pixel p, Vec c) {
+			this.pixel = p;
+			this.color = c;
+		}
+	}
+
+	public static Stream<Pixel> genStream(int nx, int ny) {
+		Stream<Pixel> stream = Stream.iterate(new Pixel(0, ny - 1), p -> {
+			if (p.x == 0 && p.y == -1) {
+				return false;
+			} else {
+				return true;
+			}
+		}, p -> {
+			int tx = p.x;
+			int ty = p.y;
+
+			if (tx < nx - 1) {
+				tx++;
+			} else {
+				tx = 0;
+				ty--;
+			}
+
+			return new Pixel(tx, ty);
+		});
+
+		return stream;
+	}
+
 	public static void main(String[] args) throws IOException {
 		BufferedWriter output = new BufferedWriter(new FileWriter("output.ppm"));
-		int nx = 400;
-		int ny = 200;
+		int nx = 600;
+		int ny = 300;
 		int ns = 100;
 
 		Ticker ticker = new Ticker(nx * ny);
 
 		SetupResult res = random_scene(nx, ny);
-		HitableList world = new HitableList(res.world);
+		//HitableList world = new HitableList(res.world);
+		BvhNode world = new BvhNode(res.world, 0, 1);
 		Camera cam = res.camera;
 
 		output.write("P3\n" + nx + " " + ny + "\n255\n");
+		Vec[][] buffer = new Vec[nx][ny];
+
+		genStream(nx, ny).parallel().map(p -> {
+			int i = p.x;
+			int j = p.y;
+			Vec col = new Vec();
+			for (int s = 0; s < ns; s++) {
+				float u = ((float) i + (float) Math.random()) / (float) nx;
+				float v = ((float) j + (float) Math.random()) / (float) ny;
+				Ray r = cam.get_ray(u, v);
+				col.add(color(r, world, 0));
+			}
+			col.div((float) ns);
+			col.sqrt();
+			return new RayCastResult(p, col);
+		}).forEach(r -> {
+			Vec col = r.color;
+			Pixel p = r.pixel;
+			buffer[p.x][p.y] = col;
+			ticker.tick();
+		});
+
 		for (int j = ny - 1; j >= 0; j--) {
 			for (int i = 0; i < nx; i++) {
-				Vec col = new Vec();
-				for (int s = 0; s < ns; s++) {
-					float u = ((float) i + (float) Math.random()) / (float) nx;
-					float v = ((float) j + (float) Math.random()) / (float) ny;
-					Ray r = cam.get_ray(u, v);
-					col.add(color(r, world, 0));
-				}
-				col.div((float) ns);
-				col.sqrt();
+				Vec col = buffer[i][j];
 				int ir = (int) (255.99 * col.get(0));
 				int ig = (int) (255.99 * col.get(1));
 				int ib = (int) (255.99 * col.get(2));
 				output.write(ir + " " + ig + " " + ib + "\n");
-				ticker.tick();
+			}
+		}
+
+		if (false) {
+			output.write("P3\n" + nx + " " + ny + "\n255\n");
+			for (int j = ny - 1; j >= 0; j--) {
+				for (int i = 0; i < nx; i++) {
+					Vec col = new Vec();
+					for (int s = 0; s < ns; s++) {
+						float u = ((float) i + (float) Math.random()) / (float) nx;
+						float v = ((float) j + (float) Math.random()) / (float) ny;
+						Ray r = cam.get_ray(u, v);
+						col.add(color(r, world, 0));
+					}
+					col.div((float) ns);
+					col.sqrt();
+				}
 			}
 		}
 
