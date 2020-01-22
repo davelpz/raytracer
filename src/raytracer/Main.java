@@ -165,7 +165,7 @@ public class Main {
 
 	public static SetupResult two_perlin_spheres(int nx, int ny) {
 		List<Hitable> list = new ArrayList<>();
-		Texture pertext = new NoiseTexture();
+		Texture pertext = new NoiseTexture(4);
 
 		list.add(new Sphere(new Vec(0, -1000.0f, 0.0f), 1000, new Lambertian(pertext)));
 		list.add(new Sphere(new Vec(0, 2.0f, 0.0f), 2, new Lambertian(pertext)));
@@ -213,16 +213,6 @@ public class Main {
 		}
 	}
 
-	public static class RayCastResult {
-		public Pixel pixel;
-		public Vec color;
-
-		public RayCastResult(Pixel p, Vec c) {
-			this.pixel = p;
-			this.color = c;
-		}
-	}
-
 	public static Stream<Pixel> genStream(int nx, int ny) {
 		Stream<Pixel> stream = Stream.iterate(new Pixel(0, ny - 1), p -> {
 			if (p.x == 0 && p.y == -1) {
@@ -263,7 +253,7 @@ public class Main {
 		output.write("P3\n" + nx + " " + ny + "\n255\n");
 		Vec[][] buffer = new Vec[nx][ny];
 
-		genStream(nx, ny).parallel().map(p -> {
+		genStream(nx, ny).parallel().forEach(p -> {
 			int i = p.x;
 			int j = p.y;
 			Vec col = new Vec();
@@ -275,10 +265,6 @@ public class Main {
 			}
 			col.div((float) ns);
 			col.sqrt();
-			return new RayCastResult(p, col);
-		}).forEach(r -> {
-			Vec col = r.color;
-			Pixel p = r.pixel;
 			buffer[p.x][p.y] = col;
 			ticker.tick();
 		});
