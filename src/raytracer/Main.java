@@ -20,6 +20,8 @@ import raytracer.material.Metal;
 import raytracer.material.ScatterResult;
 import raytracer.texture.CheckerTexture;
 import raytracer.texture.ConstantTexture;
+import raytracer.texture.NoiseTexture;
+import raytracer.texture.Texture;
 
 public class Main {
 
@@ -161,6 +163,23 @@ public class Main {
 		return new SetupResult(cam, list);
 	}
 
+	public static SetupResult two_perlin_spheres(int nx, int ny) {
+		List<Hitable> list = new ArrayList<>();
+		Texture pertext = new NoiseTexture();
+
+		list.add(new Sphere(new Vec(0, -1000.0f, 0.0f), 1000, new Lambertian(pertext)));
+		list.add(new Sphere(new Vec(0, 2.0f, 0.0f), 2, new Lambertian(pertext)));
+
+		Vec lookfrom = new Vec(13, 2, 3);
+		Vec lookat = new Vec(0, 0, 0);
+		Vec vup = new Vec(0, 1, 0);
+		float dist_to_focus = 10.0f;// (Vec.sub(lookfrom, lookat)).length();
+		float aperture = 0.0f;
+		Camera cam = new Camera(lookfrom, lookat, vup, 20, (float) nx / (float) ny, aperture, dist_to_focus, 0.0f,
+				1.0f);
+		return new SetupResult(cam, list);
+	}
+
 	public static Vec color(Ray r, Hitable world, int depth) {
 		Optional<HitRecord> temp = world.hit(r, 0.001f, Float.MAX_VALUE);
 
@@ -236,7 +255,7 @@ public class Main {
 
 		Ticker ticker = new Ticker(nx * ny);
 
-		SetupResult res = two_spheres(nx, ny);
+		SetupResult res = two_perlin_spheres(nx, ny);
 		// HitableList world = new HitableList(res.world);
 		BvhNode world = new BvhNode(res.world, 0, 1);
 		Camera cam = res.camera;
