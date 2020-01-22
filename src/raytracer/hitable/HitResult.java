@@ -1,4 +1,4 @@
-package raytracer;
+package raytracer.hitable;
 
 public class HitResult {
 	public boolean hit_anything;

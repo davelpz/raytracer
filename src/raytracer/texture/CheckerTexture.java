@@ -1,4 +1,6 @@
-package raytracer;
+package raytracer.texture;
+
+import raytracer.Vec;
 
 public class CheckerTexture implements Texture {
 	Texture odd;

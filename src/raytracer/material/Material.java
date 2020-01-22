@@ -1,6 +1,9 @@
-package raytracer;
+package raytracer.material;
 
 import java.util.Optional;
+
+import raytracer.Ray;
+import raytracer.hitable.HitRecord;
 
 public interface Material {
 

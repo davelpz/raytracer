@@ -1,4 +1,7 @@
-package raytracer;
+package raytracer.hitable;
+
+import raytracer.Ray;
+import raytracer.Vec;
 
 public class Aabb {
 	Vec _min;

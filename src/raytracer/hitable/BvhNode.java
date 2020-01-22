@@ -1,7 +1,9 @@
-package raytracer;
+package raytracer.hitable;
 
 import java.util.List;
 import java.util.Optional;
+
+import raytracer.Ray;
 
 public class BvhNode implements Hitable {
 	Hitable left;

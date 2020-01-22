@@ -1,6 +1,11 @@
-package raytracer;
+package raytracer.material;
 
 import java.util.Optional;
+
+import raytracer.Ray;
+import raytracer.Vec;
+import raytracer.hitable.HitRecord;
+import raytracer.texture.Texture;
 
 public class Lambertian implements Material {
 	Texture albedo;

@@ -1,4 +1,7 @@
-package raytracer;
+package raytracer.hitable;
+
+import raytracer.Vec;
+import raytracer.material.Material;
 
 public class HitRecord {
 	public float t;

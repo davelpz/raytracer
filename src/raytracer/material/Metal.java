@@ -1,6 +1,10 @@
-package raytracer;
+package raytracer.material;
 
 import java.util.Optional;
+
+import raytracer.Ray;
+import raytracer.Vec;
+import raytracer.hitable.HitRecord;
 
 public class Metal implements Material {
 	Vec albedo;

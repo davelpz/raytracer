@@ -1,7 +1,10 @@
-package raytracer;
+package raytracer.hitable;
 
 import java.util.Optional;
-import raytracer.HitRecord;
+
+import raytracer.Ray;
+import raytracer.Vec;
+import raytracer.material.Material;
 
 public class MovingSphere implements Hitable {
 

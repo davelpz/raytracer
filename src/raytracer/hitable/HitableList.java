@@ -1,8 +1,10 @@
-package raytracer;
+package raytracer.hitable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import raytracer.Ray;
 
 public class HitableList implements Hitable {
 	List<Hitable> list = new ArrayList<>();

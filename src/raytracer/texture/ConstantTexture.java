@@ -1,4 +1,6 @@
-package raytracer;
+package raytracer.texture;
+
+import raytracer.Vec;
 
 public class ConstantTexture implements Texture {
 	Vec color;
