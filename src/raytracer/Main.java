@@ -54,15 +54,19 @@ public class Main {
 			count = count + 1;
 			if (count % fiveper == 0) {
 				int percent = (int) (((count / max_count) * 10000.0f) / 100.0f);
-				long elapsed = (System.currentTimeMillis() - elapsed_start) / fiveper;
-				System.out.print("\r" + percent + "%    " + elapsed + "ms per pixel");
+				long elapsed_pixel = (System.currentTimeMillis() - elapsed_start) / fiveper;
+				System.out.print("\r" + percent + "%    " + elapsed_pixel + "ms per pixel");
 				elapsed_start = System.currentTimeMillis();
 			}
 		}
 
-		public void end() {
+		public void reportElapsed() {
 			long elapsed = (System.currentTimeMillis() - time_start) / 1000;
-			System.out.print("\r" + elapsed + " seconds    ");
+			System.out.print("\r" + elapsed + " seconds    ");			
+		}
+		
+		public void end() {
+			reportElapsed();
 		}
 	}
 
@@ -268,7 +272,7 @@ public class Main {
 			buffer[p.x][p.y] = col;
 			ticker.tick();
 		});
-
+		//ticker.reportElapsed();
 		for (int j = ny - 1; j >= 0; j--) {
 			for (int i = 0; i < nx; i++) {
 				Vec col = buffer[i][j];
@@ -276,23 +280,6 @@ public class Main {
 				int ig = (int) (255.99 * col.get(1));
 				int ib = (int) (255.99 * col.get(2));
 				output.write(ir + " " + ig + " " + ib + "\n");
-			}
-		}
-
-		if (false) {
-			output.write("P3\n" + nx + " " + ny + "\n255\n");
-			for (int j = ny - 1; j >= 0; j--) {
-				for (int i = 0; i < nx; i++) {
-					Vec col = new Vec();
-					for (int s = 0; s < ns; s++) {
-						float u = ((float) i + (float) Math.random()) / (float) nx;
-						float v = ((float) j + (float) Math.random()) / (float) ny;
-						Ray r = cam.get_ray(u, v);
-						col.add(color(r, world, 0));
-					}
-					col.div((float) ns);
-					col.sqrt();
-				}
 			}
 		}
 
