@@ -36,6 +36,9 @@ public class Sphere implements Hitable {
 				hit_record.p = r.point_at_parameter(hit_record.t);
 				hit_record.normal = Vec.div((Vec.sub(hit_record.p, center)), radius);
 				hit_record.mat = mat;
+				SphereUVResult uv = get_sphere_uv(hit_record.normal);
+				hit_record.u = uv.u;
+				hit_record.v = uv.v;
 				return Optional.of(hit_record);
 			}
 			temp = (-b + (float) Math.sqrt(discriminant)) / a;
@@ -44,6 +47,9 @@ public class Sphere implements Hitable {
 				hit_record.p = r.point_at_parameter(hit_record.t);
 				hit_record.normal = Vec.div((Vec.sub(hit_record.p, center)), radius);
 				hit_record.mat = mat;
+				SphereUVResult uv = get_sphere_uv(hit_record.normal);
+				hit_record.u = uv.u;
+				hit_record.v = uv.v;
 				return Optional.of(hit_record);
 			}
 		}
@@ -56,4 +62,20 @@ public class Sphere implements Hitable {
 		return Optional.of(box);
 	}
 
+	static class SphereUVResult {
+		public float u;
+		public float v;
+
+		public SphereUVResult(double u, double v) {
+			this.u = (float) u;
+			this.v = (float) v;
+		}
+	}
+
+	public static SphereUVResult get_sphere_uv(final Vec p) {
+		float phi = (float) Math.atan2(p.z(), p.x());
+		float theta = (float) Math.asin(p.y());
+
+		return new SphereUVResult(1.0f - (phi + Math.PI) / (2.0f * Math.PI), (theta + Math.PI / 2.0f) / Math.PI);
+	}
 }

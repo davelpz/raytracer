@@ -35,4 +35,8 @@ public class Ray {
 	public Vec point_at_parameter(float t) {
 		return Vec.add(a, Vec.mul(b, t));
 	}
+	
+	public String toString() {
+		return "Ray("+a+","+b+","+_time+")";
+	}
 }

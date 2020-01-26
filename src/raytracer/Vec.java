@@ -67,7 +67,7 @@ public class Vec {
 	}
 
 	public String toString() {
-		return "Vec(" + e[0] + " " + e[1] + "  " + e[2] + ")";
+		return "Vec(" + e[0] + "," + e[1] + "," + e[2] + ")";
 	}
 
 	public void make_unit_vector() {

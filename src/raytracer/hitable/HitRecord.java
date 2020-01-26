@@ -8,6 +8,8 @@ public class HitRecord {
 	public Vec p;
 	public Vec normal;
 	public Material mat;
+	public float u;
+	public float v;
 
 	public HitRecord() {
 		t = 0.0f;
@@ -19,5 +21,9 @@ public class HitRecord {
 		this.t = t;
 		this.p = p;
 		this.normal = normal;
+	}
+	
+	public String toString() {
+		return "HitRecord("+t+","+p+","+normal+","+u+","+v+")";
 	}
 }

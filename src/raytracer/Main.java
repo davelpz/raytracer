@@ -14,12 +14,14 @@ import raytracer.hitable.HitRecord;
 import raytracer.hitable.Hitable;
 import raytracer.hitable.MovingSphere;
 import raytracer.hitable.Sphere;
+import raytracer.image.PPMImage;
 import raytracer.material.Dielectric;
 import raytracer.material.Lambertian;
 import raytracer.material.Metal;
 import raytracer.material.ScatterResult;
 import raytracer.texture.CheckerTexture;
 import raytracer.texture.ConstantTexture;
+import raytracer.texture.ImageTexture;
 import raytracer.texture.NoiseTexture;
 import raytracer.texture.Texture;
 
@@ -62,9 +64,9 @@ public class Main {
 
 		public void reportElapsed() {
 			long elapsed = (System.currentTimeMillis() - time_start) / 1000;
-			System.out.print("\r" + elapsed + " seconds    ");			
+			System.out.print("\r" + elapsed + " seconds    ");
 		}
-		
+
 		public void end() {
 			reportElapsed();
 		}
@@ -109,13 +111,11 @@ public class Main {
 	}
 
 	public static SetupResult random_scene(int nx, int ny) {
-		int n = 500;
 		List<Hitable> list = new ArrayList<>();
 		CheckerTexture checker = new CheckerTexture(new ConstantTexture(new Vec(0.2, 0.3, 0.1)),
 				new ConstantTexture(new Vec(0.9, 0.9, 0.9)));
 		list.add(new Sphere(new Vec(0, -1000.0f, 0.0f), 1000, new Lambertian(checker)));
 
-		int i = 1;
 		for (int a = -11; a < 11; a++) {
 			for (int b = -11; b < 11; b++) {
 				float choose_mat = (float) Math.random();
@@ -184,6 +184,23 @@ public class Main {
 		return new SetupResult(cam, list);
 	}
 
+	public static SetupResult earth(int nx, int ny) throws IOException {
+		List<Hitable> list = new ArrayList<>();
+		PPMImage image = PPMImage.fromFile("earthmap.ppm");
+		Texture texture = new ImageTexture(image);
+
+		list.add(new Sphere(new Vec(0, 0.0f, 0.0f), 4.5f, new Lambertian(texture)));
+
+		Vec lookfrom = new Vec(0, 0, -28);
+		Vec lookat = new Vec(0, 0, 0);
+		Vec vup = new Vec(0, 1, 0);
+		float dist_to_focus = 10.0f;// (Vec.sub(lookfrom, lookat)).length();
+		float aperture = 0.0f;
+		Camera cam = new Camera(lookfrom, lookat, vup, 20, (float) nx / (float) ny, aperture, dist_to_focus, 0.0f,
+				1.0f);
+		return new SetupResult(cam, list);
+	}
+
 	public static Vec color(Ray r, Hitable world, int depth) {
 		Optional<HitRecord> temp = world.hit(r, 0.001f, Float.MAX_VALUE);
 
@@ -192,6 +209,7 @@ public class Main {
 			if (depth < 50 && result.isPresent()) {
 				ScatterResult sr = result.get();
 				return Vec.mul(sr.attenuation, color(sr.scattered, world, depth + 1));
+				// return sr.attenuation;
 			} else {
 				return new Vec();
 			}
@@ -203,7 +221,7 @@ public class Main {
 		});
 	}
 
-	public static class Pixel {
+	static class Pixel {
 		public int x;
 		public int y;
 
@@ -243,18 +261,17 @@ public class Main {
 
 	public static void main(String[] args) throws IOException {
 		BufferedWriter output = new BufferedWriter(new FileWriter("output.ppm"));
-		int nx = 400;
-		int ny = 200;
+		int nx = 2000;
+		int ny = 1000;
 		int ns = 100;
 
 		Ticker ticker = new Ticker(nx * ny);
 
-		SetupResult res = two_perlin_spheres(nx, ny);
+		SetupResult res = earth(nx, ny);
 		// HitableList world = new HitableList(res.world);
 		BvhNode world = new BvhNode(res.world, 0, 1);
 		Camera cam = res.camera;
 
-		output.write("P3\n" + nx + " " + ny + "\n255\n");
 		Vec[][] buffer = new Vec[nx][ny];
 
 		genStream(nx, ny).parallel().forEach(p -> {
@@ -272,7 +289,10 @@ public class Main {
 			buffer[p.x][p.y] = col;
 			ticker.tick();
 		});
-		//ticker.reportElapsed();
+		// ticker.reportElapsed();
+
+		output.write("P3\n" + nx + " " + ny + "\n255\n");
+
 		for (int j = ny - 1; j >= 0; j--) {
 			for (int i = 0; i < nx; i++) {
 				Vec col = buffer[i][j];

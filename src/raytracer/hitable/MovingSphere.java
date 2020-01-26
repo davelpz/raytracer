@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import raytracer.Ray;
 import raytracer.Vec;
+import raytracer.hitable.Sphere.SphereUVResult;
 import raytracer.material.Material;
 
 public class MovingSphere implements Hitable {
@@ -45,6 +46,9 @@ public class MovingSphere implements Hitable {
 				hit_record.p = r.point_at_parameter(hit_record.t);
 				hit_record.normal = Vec.div((Vec.sub(hit_record.p, center(r.time()))), radius);
 				hit_record.mat = mat;
+				SphereUVResult uv = Sphere.get_sphere_uv(Vec.sub(hit_record.p, Vec.div(center(r.time()), radius)));
+				hit_record.u = uv.u;
+				hit_record.v = uv.v;
 				return Optional.of(hit_record);
 			}
 			temp = (-b + (float) Math.sqrt(discriminant)) / a;
@@ -53,6 +57,9 @@ public class MovingSphere implements Hitable {
 				hit_record.p = r.point_at_parameter(hit_record.t);
 				hit_record.normal = Vec.div((Vec.sub(hit_record.p, center(r.time()))), radius);
 				hit_record.mat = mat;
+				SphereUVResult uv = Sphere.get_sphere_uv(Vec.sub(hit_record.p, Vec.div(center(r.time()), radius)));
+				hit_record.u = uv.u;
+				hit_record.v = uv.v;
 				return Optional.of(hit_record);
 			}
 		}
