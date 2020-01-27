@@ -14,8 +14,10 @@ import raytracer.hitable.HitRecord;
 import raytracer.hitable.Hitable;
 import raytracer.hitable.MovingSphere;
 import raytracer.hitable.Sphere;
+import raytracer.hitable.XYRect;
 import raytracer.image.PPMImage;
 import raytracer.material.Dielectric;
+import raytracer.material.DiffuseLight;
 import raytracer.material.Lambertian;
 import raytracer.material.Metal;
 import raytracer.material.ScatterResult;
@@ -201,23 +203,45 @@ public class Main {
 		return new SetupResult(cam, list);
 	}
 
+	public static SetupResult simple_light(int nx, int ny) throws IOException {
+		List<Hitable> list = new ArrayList<>();
+		Texture pertext = new NoiseTexture(4);
+
+		list.add(new Sphere(new Vec(0, -1000.0f, 0.0f), 1000f, new Lambertian(pertext)));
+		list.add(new Sphere(new Vec(0, 2.0f, 0.0f), 2f, new Lambertian(pertext)));
+		//list.add(new Sphere(new Vec(0, 7.0f, 0.0f), 2f, new DiffuseLight(new ConstantTexture(new Vec(4, 4, 4)))));
+		list.add(new XYRect(3, 5, 1, 3, -2, new DiffuseLight(new ConstantTexture(new Vec(4, 4, 4)))));
+
+		Vec lookfrom = new Vec(20, 5, 14);
+		Vec lookat = new Vec(0, 0, 0);
+		Vec vup = new Vec(0, 1, 0);
+		float dist_to_focus = 10.0f;// (Vec.sub(lookfrom, lookat)).length();
+		float aperture = 0.0f;
+		Camera cam = new Camera(lookfrom, lookat, vup, 20, (float) nx / (float) ny, aperture, dist_to_focus, 0.0f,
+				1.0f);
+		return new SetupResult(cam, list);
+	}
+
 	public static Vec color(Ray r, Hitable world, int depth) {
 		Optional<HitRecord> temp = world.hit(r, 0.001f, Float.MAX_VALUE);
 
 		return temp.map(rec -> {
+			Vec emitted = rec.mat.emitted(rec.u, rec.v, rec.p);
 			Optional<ScatterResult> result = rec.mat.scatter(r, rec);
 			if (depth < 50 && result.isPresent()) {
 				ScatterResult sr = result.get();
-				return Vec.mul(sr.attenuation, color(sr.scattered, world, depth + 1));
+				return Vec.add(emitted, Vec.mul(sr.attenuation, color(sr.scattered, world, depth + 1)));
 				// return sr.attenuation;
 			} else {
-				return new Vec();
+				return emitted;
 			}
 
 		}).orElseGet(() -> {
-			Vec unit_direction = Vec.unit_vector(r.direction());
-			float t = 0.5f * (unit_direction.y() + 1.0f);
-			return Vec.add(Vec.mul((1.0f - t), new Vec(1.0f, 1.0f, 1.0f)), Vec.mul(t, new Vec(0.5f, 0.7f, 1.0f)));
+			// Vec unit_direction = Vec.unit_vector(r.direction());
+			// float t = 0.5f * (unit_direction.y() + 1.0f);
+			// return Vec.add(Vec.mul((1.0f - t), new Vec(1.0f, 1.0f, 1.0f)), Vec.mul(t, new
+			// Vec(0.5f, 0.7f, 1.0f)));
+			return new Vec();
 		});
 	}
 
@@ -261,13 +285,13 @@ public class Main {
 
 	public static void main(String[] args) throws IOException {
 		BufferedWriter output = new BufferedWriter(new FileWriter("output.ppm"));
-		int nx = 2000;
-		int ny = 1000;
+		int nx = 500;
+		int ny = 250;
 		int ns = 100;
 
 		Ticker ticker = new Ticker(nx * ny);
 
-		SetupResult res = earth(nx, ny);
+		SetupResult res = simple_light(nx, ny);
 		// HitableList world = new HitableList(res.world);
 		BvhNode world = new BvhNode(res.world, 0, 1);
 		Camera cam = res.camera;
