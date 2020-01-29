@@ -10,15 +10,19 @@ import java.util.stream.Stream;
 
 import raytracer.Vec;
 import raytracer.hitable.BvhNode;
+import raytracer.hitable.FlipNormals;
 import raytracer.hitable.HitRecord;
 import raytracer.hitable.Hitable;
 import raytracer.hitable.MovingSphere;
 import raytracer.hitable.Sphere;
 import raytracer.hitable.XYRect;
+import raytracer.hitable.XZRect;
+import raytracer.hitable.YZRect;
 import raytracer.image.PPMImage;
 import raytracer.material.Dielectric;
 import raytracer.material.DiffuseLight;
 import raytracer.material.Lambertian;
+import raytracer.material.Material;
 import raytracer.material.Metal;
 import raytracer.material.ScatterResult;
 import raytracer.texture.CheckerTexture;
@@ -209,7 +213,7 @@ public class Main {
 
 		list.add(new Sphere(new Vec(0, -1000.0f, 0.0f), 1000f, new Lambertian(pertext)));
 		list.add(new Sphere(new Vec(0, 2.0f, 0.0f), 2f, new Lambertian(pertext)));
-		//list.add(new Sphere(new Vec(0, 7.0f, 0.0f), 2f, new DiffuseLight(new ConstantTexture(new Vec(4, 4, 4)))));
+		list.add(new Sphere(new Vec(0, 7.0f, 0.0f), 2f, new DiffuseLight(new ConstantTexture(new Vec(4, 4, 4)))));
 		list.add(new XYRect(3, 5, 1, 3, -2, new DiffuseLight(new ConstantTexture(new Vec(4, 4, 4)))));
 
 		Vec lookfrom = new Vec(20, 5, 14);
@@ -218,6 +222,32 @@ public class Main {
 		float dist_to_focus = 10.0f;// (Vec.sub(lookfrom, lookat)).length();
 		float aperture = 0.0f;
 		Camera cam = new Camera(lookfrom, lookat, vup, 20, (float) nx / (float) ny, aperture, dist_to_focus, 0.0f,
+				1.0f);
+		return new SetupResult(cam, list);
+	}
+
+	public static SetupResult cornell_box(int nx, int ny) throws IOException {
+		List<Hitable> list = new ArrayList<>();
+		Material red = new Lambertian(new ConstantTexture(new Vec(0.65, 0.05, 0.05)));
+		Material white = new Lambertian(new ConstantTexture(new Vec(0.73, 0.73, 0.73)));
+		Material green = new Lambertian(new ConstantTexture(new Vec(0.12, 0.45, 0.15)));
+		Material light = new DiffuseLight(new ConstantTexture(new Vec(15, 15, 15)));
+
+		list.add(new FlipNormals(new YZRect(0, 555, 0, 555, 555, green)));
+		list.add(new YZRect(0, 555, 0, 555, 0, red));
+		list.add(new XZRect(213, 343, 227, 332, 554, light));
+		list.add(new FlipNormals(new XZRect(0, 555, 0, 555, 555, white)));
+		list.add(new XZRect(0, 555, 0, 555, 0, white));
+		list.add(new FlipNormals(new XYRect(0, 555, 0, 555, 555, white)));
+		
+
+		Vec lookfrom = new Vec(278, 278, -800);
+		Vec lookat = new Vec(278, 278, 0);
+		Vec vup = new Vec(0, 1, 0);
+		float dist_to_focus = 10.0f;// (Vec.sub(lookfrom, lookat)).length();
+		float aperture = 0.0f;
+		float vfov = 40.0f;
+		Camera cam = new Camera(lookfrom, lookat, vup, vfov, (float) nx / (float) ny, aperture, dist_to_focus, 0.0f,
 				1.0f);
 		return new SetupResult(cam, list);
 	}
@@ -285,13 +315,13 @@ public class Main {
 
 	public static void main(String[] args) throws IOException {
 		BufferedWriter output = new BufferedWriter(new FileWriter("output.ppm"));
-		int nx = 500;
-		int ny = 250;
+		int nx = 700;
+		int ny = 350;
 		int ns = 100;
 
 		Ticker ticker = new Ticker(nx * ny);
 
-		SetupResult res = simple_light(nx, ny);
+		SetupResult res = cornell_box(nx, ny);
 		// HitableList world = new HitableList(res.world);
 		BvhNode world = new BvhNode(res.world, 0, 1);
 		Camera cam = res.camera;
