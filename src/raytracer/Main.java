@@ -9,8 +9,9 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import raytracer.Vec;
+import raytracer.hitable.Box;
 import raytracer.hitable.BvhNode;
-import raytracer.hitable.FlipNormals;
+import raytracer.hitable.ConstantMedium;
 import raytracer.hitable.HitRecord;
 import raytracer.hitable.Hitable;
 import raytracer.hitable.MovingSphere;
@@ -18,6 +19,9 @@ import raytracer.hitable.Sphere;
 import raytracer.hitable.XYRect;
 import raytracer.hitable.XZRect;
 import raytracer.hitable.YZRect;
+import raytracer.hitable.transforms.FlipNormals;
+import raytracer.hitable.transforms.RotateY;
+import raytracer.hitable.transforms.Translate;
 import raytracer.image.PPMImage;
 import raytracer.material.Dielectric;
 import raytracer.material.DiffuseLight;
@@ -231,15 +235,50 @@ public class Main {
 		Material red = new Lambertian(new ConstantTexture(new Vec(0.65, 0.05, 0.05)));
 		Material white = new Lambertian(new ConstantTexture(new Vec(0.73, 0.73, 0.73)));
 		Material green = new Lambertian(new ConstantTexture(new Vec(0.12, 0.45, 0.15)));
-		Material light = new DiffuseLight(new ConstantTexture(new Vec(15, 15, 15)));
+		Material light = new DiffuseLight(new ConstantTexture(new Vec(3, 3, 3)));
 
 		list.add(new FlipNormals(new YZRect(0, 555, 0, 555, 555, green)));
 		list.add(new YZRect(0, 555, 0, 555, 0, red));
-		list.add(new XZRect(213, 343, 227, 332, 554, light));
+		list.add(new XZRect(100, 455, 100, 455, 554, light));
 		list.add(new FlipNormals(new XZRect(0, 555, 0, 555, 555, white)));
 		list.add(new XZRect(0, 555, 0, 555, 0, white));
 		list.add(new FlipNormals(new XYRect(0, 555, 0, 555, 555, white)));
-		
+		list.add(new Translate(new RotateY(new Box(new Vec(0, 0, 0), new Vec(165, 165, 165), white), -18),
+				new Vec(130, 0, 65)));
+		list.add(new Translate(new RotateY(new Box(new Vec(0, 0, 0), new Vec(165, 330, 165), white), 15),
+				new Vec(265, 0, 295)));
+
+		Vec lookfrom = new Vec(278, 278, -800);
+		Vec lookat = new Vec(278, 278, 0);
+		Vec vup = new Vec(0, 1, 0);
+		float dist_to_focus = 10.0f;// (Vec.sub(lookfrom, lookat)).length();
+		float aperture = 0.0f;
+		float vfov = 40.0f;
+		Camera cam = new Camera(lookfrom, lookat, vup, vfov, (float) nx / (float) ny, aperture, dist_to_focus, 0.0f,
+				1.0f);
+		return new SetupResult(cam, list);
+	}
+
+	public static SetupResult cornell_smoke(int nx, int ny) throws IOException {
+		List<Hitable> list = new ArrayList<>();
+		Material red = new Lambertian(new ConstantTexture(new Vec(0.65, 0.05, 0.05)));
+		Material white = new Lambertian(new ConstantTexture(new Vec(0.73, 0.73, 0.73)));
+		Material green = new Lambertian(new ConstantTexture(new Vec(0.12, 0.45, 0.15)));
+		Material light = new DiffuseLight(new ConstantTexture(new Vec(4, 4, 4)));
+
+		list.add(new FlipNormals(new YZRect(0, 555, 0, 555, 555, green)));
+		list.add(new YZRect(0, 555, 0, 555, 0, red));
+		list.add(new XZRect(100, 455, 100, 455, 554, light));
+		list.add(new FlipNormals(new XZRect(0, 555, 0, 555, 555, white)));
+		list.add(new XZRect(0, 555, 0, 555, 0, white));
+		list.add(new FlipNormals(new XYRect(0, 555, 0, 555, 555, white)));
+
+		Hitable b1 = new Translate(new RotateY(new Box(new Vec(0, 0, 0), new Vec(165, 165, 165), white), -18),
+				new Vec(130, 0, 65));
+		Hitable b2 = new Translate(new RotateY(new Box(new Vec(0, 0, 0), new Vec(165, 330, 165), white), 15),
+				new Vec(265, 0, 295));
+		list.add(new ConstantMedium(b1, 0.01f, new ConstantTexture(new Vec(1, 1, 1))));
+		list.add(new ConstantMedium(b2, 0.01f, new ConstantTexture(new Vec(0, 0, 0))));
 
 		Vec lookfrom = new Vec(278, 278, -800);
 		Vec lookat = new Vec(278, 278, 0);
@@ -315,13 +354,13 @@ public class Main {
 
 	public static void main(String[] args) throws IOException {
 		BufferedWriter output = new BufferedWriter(new FileWriter("output.ppm"));
-		int nx = 700;
-		int ny = 350;
+		int nx = 500;
+		int ny = 250;
 		int ns = 100;
 
 		Ticker ticker = new Ticker(nx * ny);
 
-		SetupResult res = cornell_box(nx, ny);
+		SetupResult res = cornell_smoke(nx, ny);
 		// HitableList world = new HitableList(res.world);
 		BvhNode world = new BvhNode(res.world, 0, 1);
 		Camera cam = res.camera;

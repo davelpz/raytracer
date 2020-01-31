@@ -18,6 +18,10 @@ public class Vec {
 		e[2] = (float) e2;
 	}
 
+	public static Vec clone(Vec t) {
+		return new Vec(t.e[0], t.e[1], t.e[2]);
+	}
+
 	public float x() {
 		return e[0];
 	}

@@ -22,8 +22,16 @@ public class HitRecord {
 		this.p = p;
 		this.normal = normal;
 	}
-	
+
+	public static HitRecord clone(HitRecord p) {
+		var t = new HitRecord(p.t, p.p, p.normal);
+		t.mat = p.mat;
+		t.u = p.u;
+		t.v = p.v;
+		return t;
+	}
+
 	public String toString() {
-		return "HitRecord("+t+","+p+","+normal+","+u+","+v+")";
+		return "HitRecord(" + t + "," + p + "," + normal + "," + u + "," + v + ")";
 	}
 }

@@ -1,9 +1,12 @@
-package raytracer.hitable;
+package raytracer.hitable.transforms;
 
 import java.util.Optional;
 
 import raytracer.Ray;
 import raytracer.Vec;
+import raytracer.hitable.Aabb;
+import raytracer.hitable.HitRecord;
+import raytracer.hitable.Hitable;
 
 public class FlipNormals implements Hitable {
 	Hitable ptr;
