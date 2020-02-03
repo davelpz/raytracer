@@ -169,4 +169,21 @@ public class Vec {
 	public static Vec unit_vector(Vec v) {
 		return Vec.div(v, v.length());
 	}
+
+	public void clamp(float min, float max) {
+		if (e[0] < min)
+			e[0] = min;
+		else if (e[0] > max)
+			e[0] = max;
+
+		if (e[1] < min)
+			e[1] = min;
+		else if (e[1] > max)
+			e[1] = max;
+
+		if (e[2] < min)
+			e[2] = min;
+		else if (e[2] > max)
+			e[2] = max;
+	}
 }

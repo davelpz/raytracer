@@ -6,9 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
-import raytracer.Vec;
 import raytracer.hitable.Box;
 import raytracer.hitable.BvhNode;
 import raytracer.hitable.ConstantMedium;
@@ -34,6 +32,7 @@ import raytracer.texture.ConstantTexture;
 import raytracer.texture.ImageTexture;
 import raytracer.texture.NoiseTexture;
 import raytracer.texture.Texture;
+import raytracer.util.Pixel;
 
 public class Main {
 
@@ -54,20 +53,25 @@ public class Main {
 		long elapsed_start;
 		long time_start;
 
-		public Ticker(int max) {
+		public Ticker(int max, int ns) {
 			max_count = max;
 			fiveper = (int) (max_count * 0.05f);
 			elapsed_start = System.currentTimeMillis();
 			time_start = elapsed_start;
-			System.out.println("" + max_count + " pixels");
+			System.out.format("%s pixels, %.0f light rays", max_count, max_count * ns);
 		}
 
 		public void tick() {
 			count = count + 1;
 			if (count % fiveper == 0) {
 				int percent = (int) (((count / max_count) * 10000.0f) / 100.0f);
-				long elapsed_pixel = (System.currentTimeMillis() - elapsed_start) / fiveper;
-				System.out.print("\r" + percent + "%    " + elapsed_pixel + "ms per pixel");
+				long elapsed_total_time = System.currentTimeMillis() - time_start;
+				long estimated_total_time = (long) (elapsed_total_time * (100.0f / percent));
+				long estimated_time_left = estimated_total_time - elapsed_total_time;
+				long elapsed_time = System.currentTimeMillis() - elapsed_start;
+				long elapsed_pixel = elapsed_time / fiveper;
+				System.out.format("\r%2d%%\t%2dms per pixel\t%2dms\t\t%2dms", percent, elapsed_pixel, elapsed_total_time,
+						estimated_time_left);
 				elapsed_start = System.currentTimeMillis();
 			}
 		}
@@ -291,6 +295,96 @@ public class Main {
 		return new SetupResult(cam, list);
 	}
 
+	public static SetupResult final_scene(int nx, int ny) throws IOException {
+		List<Hitable> list = new ArrayList<>();
+		List<Hitable> boxlist = new ArrayList<>();
+		List<Hitable> boxlist2 = new ArrayList<>();
+		Material white = new Lambertian(new ConstantTexture(new Vec(0.73, 0.73, 0.73)));
+		Material ground = new Lambertian(new ConstantTexture(new Vec(0.48, 0.83, 0.53)));
+		Material light = new DiffuseLight(new ConstantTexture(new Vec(3, 3, 3)));
+
+		for (var i = 0; i < 20; i++) {
+			for (var j = 0; j < 20; j++) {
+				float w = 100;
+				float x0 = -1000 + i * w;
+				float z0 = -1000 + j * w;
+				float y0 = 0;
+				float x1 = x0 + w;
+				float y1 = 100.0f * ((float) Math.random() + 0.01f);
+				float z1 = z0 + w;
+				boxlist.add(new Box(new Vec(x0, y0, z0), new Vec(x1, y1, z1), ground));
+			}
+
+		}
+		list.add(new BvhNode(boxlist, 0, 1));
+
+		list.add(new XZRect(150, 405, 150, 405, 554, light));
+
+		Vec center = new Vec(400, 400, 200);
+		list.add(new MovingSphere(center, Vec.add(center, new Vec(30, 0, 0)), 0, 1, 50,
+				new Lambertian(new ConstantTexture(new Vec(0.7, 0.3, 0.1)))));
+		list.add(new Sphere(new Vec(260, 150, 45), 50, new Dielectric(1.5f)));
+		list.add(new Sphere(new Vec(0, 150, 145), 50, new Metal(new Vec(0.8, 0.8, 0.9), 10.0f)));
+
+		Hitable boundary = new Sphere(new Vec(360, 150, 145), 70, new Dielectric(1.5f));
+		list.add(boundary);
+
+		list.add(new ConstantMedium(boundary, 0.2f, new ConstantTexture(new Vec(0.2, 0.4, 0.9))));
+
+		boundary = new Sphere(new Vec(0, 0, 0), 5000, new Dielectric(1.5f));
+		list.add(new ConstantMedium(boundary, 0.0001f, new ConstantTexture(new Vec(1.0, 1.0, 1.0))));
+
+		PPMImage image = PPMImage.fromFile("earthmap.ppm");
+		Texture texture = new ImageTexture(image);
+		Material emat = new Lambertian(texture);
+		list.add(new Sphere(new Vec(400, 200, 400), 100, emat));
+
+		Texture pertext = new NoiseTexture(1.1f);
+		list.add(new Sphere(new Vec(220, 280, 300), 80, new Lambertian(pertext)));
+
+		for (int j = 0; j < 1000; j++) {
+			boxlist2.add(new Sphere(new Vec(165 * Math.random(), 165 * Math.random(), 165 * Math.random()), 10, white));
+		}
+		list.add(new Translate(new RotateY(new BvhNode(boxlist2, 0.0f, 1.0f), 15), new Vec(-100, 270, 395)));
+
+		Vec lookfrom = new Vec(278, 278, -800);
+		Vec lookat = new Vec(278, 278, 0);
+		Vec vup = new Vec(0, 1, 0);
+		float dist_to_focus = 10.0f;// (Vec.sub(lookfrom, lookat)).length();
+		float aperture = 0.0f;
+		float vfov = 40.0f;
+		Camera cam = new Camera(lookfrom, lookat, vup, vfov, (float) nx / (float) ny, aperture, dist_to_focus, 0.0f,
+				1.0f);
+		return new SetupResult(cam, list);
+	}
+
+	public static SetupResult final_scenet(int nx, int ny) throws IOException {
+		List<Hitable> list = new ArrayList<>();
+		Material white = new Lambertian(new ConstantTexture(new Vec(0.73, 0.73, 0.73)));
+		Material ground = new Lambertian(new ConstantTexture(new Vec(0.48, 0.83, 0.53)));
+		Material light = new DiffuseLight(new ConstantTexture(new Vec(3, 3, 3)));
+
+		list.add(new XZRect(150, 405, 150, 405, 554, light));
+
+		PPMImage image = PPMImage.fromFile("earthmap.ppm");
+		Texture texture = new ImageTexture(image);
+		Material emat = new Lambertian(texture);
+		list.add(new Sphere(new Vec(400, 200, 400), 100, emat));
+
+		Texture pertext = new NoiseTexture(1.0f);
+		list.add(new Sphere(new Vec(220, 280, 300), 80, new Lambertian(pertext)));
+
+		Vec lookfrom = new Vec(278, 278, -800);
+		Vec lookat = new Vec(278, 278, 0);
+		Vec vup = new Vec(0, 1, 0);
+		float dist_to_focus = 10.0f;// (Vec.sub(lookfrom, lookat)).length();
+		float aperture = 0.0f;
+		float vfov = 40.0f;
+		Camera cam = new Camera(lookfrom, lookat, vup, vfov, (float) nx / (float) ny, aperture, dist_to_focus, 0.0f,
+				1.0f);
+		return new SetupResult(cam, list);
+	}
+
 	public static Vec color(Ray r, Hitable world, int depth) {
 		Optional<HitRecord> temp = world.hit(r, 0.001f, Float.MAX_VALUE);
 
@@ -306,68 +400,32 @@ public class Main {
 			}
 
 		}).orElseGet(() -> {
-			// Vec unit_direction = Vec.unit_vector(r.direction());
-			// float t = 0.5f * (unit_direction.y() + 1.0f);
-			// return Vec.add(Vec.mul((1.0f - t), new Vec(1.0f, 1.0f, 1.0f)), Vec.mul(t, new
-			// Vec(0.5f, 0.7f, 1.0f)));
 			return new Vec();
+			/*
+			 * Vec unit_direction = Vec.unit_vector(r.direction()); float t = 0.5f *
+			 * (unit_direction.y() + 1.0f); return Vec.add(Vec.mul((1.0f - t), new Vec(1.0f,
+			 * 1.0f, 1.0f)), Vec.mul(t, new Vec(0.5f, 0.7f, 1.0f)));
+			 */
 		});
-	}
-
-	static class Pixel {
-		public int x;
-		public int y;
-
-		public Pixel(int x, int y) {
-			this.x = x;
-			this.y = y;
-		}
-
-		public String toString() {
-			return "Pixel(" + x + "," + y + ")";
-		}
-	}
-
-	public static Stream<Pixel> genStream(int nx, int ny) {
-		Stream<Pixel> stream = Stream.iterate(new Pixel(0, ny - 1), p -> {
-			if (p.x == 0 && p.y == -1) {
-				return false;
-			} else {
-				return true;
-			}
-		}, p -> {
-			int tx = p.x;
-			int ty = p.y;
-
-			if (tx < nx - 1) {
-				tx++;
-			} else {
-				tx = 0;
-				ty--;
-			}
-
-			return new Pixel(tx, ty);
-		});
-
-		return stream;
 	}
 
 	public static void main(String[] args) throws IOException {
 		BufferedWriter output = new BufferedWriter(new FileWriter("output.ppm"));
-		int nx = 500;
-		int ny = 250;
-		int ns = 100;
+		int nx = 200;
+		int ny = 200;
+		int ns = 200;
 
-		Ticker ticker = new Ticker(nx * ny);
+		Ticker ticker = new Ticker(nx * ny, ns);
 
-		SetupResult res = cornell_smoke(nx, ny);
+		SetupResult res = final_scene(nx, ny);
+
 		// HitableList world = new HitableList(res.world);
 		BvhNode world = new BvhNode(res.world, 0, 1);
 		Camera cam = res.camera;
 
 		Vec[][] buffer = new Vec[nx][ny];
 
-		genStream(nx, ny).parallel().forEach(p -> {
+		Pixel.genStream(nx, ny).parallel().forEach(p -> {
 			int i = p.x;
 			int j = p.y;
 			Vec col = new Vec();
@@ -389,6 +447,7 @@ public class Main {
 		for (int j = ny - 1; j >= 0; j--) {
 			for (int i = 0; i < nx; i++) {
 				Vec col = buffer[i][j];
+				col.clamp(0.0f, 0.999999f);
 				int ir = (int) (255.99 * col.get(0));
 				int ig = (int) (255.99 * col.get(1));
 				int ib = (int) (255.99 * col.get(2));
