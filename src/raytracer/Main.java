@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import raytracer.hitable.Box;
 import raytracer.hitable.BvhNode;
@@ -70,7 +72,7 @@ public class Main {
 				long estimated_time_left = estimated_total_time - elapsed_total_time;
 				long elapsed_time = System.currentTimeMillis() - elapsed_start;
 				long elapsed_pixel = elapsed_time / fiveper;
-				System.out.format("\r%2d%%\t%2dms per pixel\t%2dms\t\t%2dms", percent, elapsed_pixel, elapsed_total_time,
+				System.out.format("\r%2d%%\t%2dms per pixel\t%6dms\t%6dms", percent, elapsed_pixel, elapsed_total_time,
 						estimated_time_left);
 				elapsed_start = System.currentTimeMillis();
 			}
@@ -358,34 +360,7 @@ public class Main {
 		return new SetupResult(cam, list);
 	}
 
-	public static SetupResult final_scenet(int nx, int ny) throws IOException {
-		List<Hitable> list = new ArrayList<>();
-		Material white = new Lambertian(new ConstantTexture(new Vec(0.73, 0.73, 0.73)));
-		Material ground = new Lambertian(new ConstantTexture(new Vec(0.48, 0.83, 0.53)));
-		Material light = new DiffuseLight(new ConstantTexture(new Vec(3, 3, 3)));
-
-		list.add(new XZRect(150, 405, 150, 405, 554, light));
-
-		PPMImage image = PPMImage.fromFile("earthmap.ppm");
-		Texture texture = new ImageTexture(image);
-		Material emat = new Lambertian(texture);
-		list.add(new Sphere(new Vec(400, 200, 400), 100, emat));
-
-		Texture pertext = new NoiseTexture(1.0f);
-		list.add(new Sphere(new Vec(220, 280, 300), 80, new Lambertian(pertext)));
-
-		Vec lookfrom = new Vec(278, 278, -800);
-		Vec lookat = new Vec(278, 278, 0);
-		Vec vup = new Vec(0, 1, 0);
-		float dist_to_focus = 10.0f;// (Vec.sub(lookfrom, lookat)).length();
-		float aperture = 0.0f;
-		float vfov = 40.0f;
-		Camera cam = new Camera(lookfrom, lookat, vup, vfov, (float) nx / (float) ny, aperture, dist_to_focus, 0.0f,
-				1.0f);
-		return new SetupResult(cam, list);
-	}
-
-	public static Vec color(Ray r, Hitable world, int depth) {
+	public static Vec color(final Ray r, final Hitable world, int depth) {
 		Optional<HitRecord> temp = world.hit(r, 0.001f, Float.MAX_VALUE);
 
 		return temp.map(rec -> {
@@ -411,8 +386,8 @@ public class Main {
 
 	public static void main(String[] args) throws IOException {
 		BufferedWriter output = new BufferedWriter(new FileWriter("output.ppm"));
-		int nx = 200;
-		int ny = 200;
+		int nx = 300;
+		int ny = 300;
 		int ns = 200;
 
 		Ticker ticker = new Ticker(nx * ny, ns);
@@ -428,15 +403,16 @@ public class Main {
 		Pixel.genStream(nx, ny).parallel().forEach(p -> {
 			int i = p.x;
 			int j = p.y;
-			Vec col = new Vec();
-			for (int s = 0; s < ns; s++) {
+
+			Vec col = IntStream.range(0, ns).mapToObj(_p -> {
 				float u = ((float) i + (float) Math.random()) / (float) nx;
 				float v = ((float) j + (float) Math.random()) / (float) ny;
 				Ray r = cam.get_ray(u, v);
-				col.add(color(r, world, 0));
-			}
-			col.div((float) ns);
-			col.sqrt();
+				return color(r, world, 0);
+			}).reduce(new Vec(), (prev, next) -> {
+				return prev.add(next);
+			}).div((float) ns).sqrt();
+
 			buffer[p.x][p.y] = col;
 			ticker.tick();
 		});
